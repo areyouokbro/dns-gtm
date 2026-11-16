@@ -1,0 +1,53 @@
+# dns-gtm 配置示例（生产环境请替换为你的真实域名与后端）
+listen: "0.0.0.0:5353"          # 自定义监听 UDP 端口
+ttl: 15                          # 应答 TTL（秒），短值便于故障切换
+
+# 全局健康检查参数（后台定时探测，与查询请求完全解耦）
+probe:
+  interval: 5             # 探测周期（秒）
+  timeout: 2              # 单次探测超时（秒）
+  fail_threshold: 3       # 连续失败 3 次判定 down
+  rise_threshold: 2       # down 后连续成功 2 次恢复
+  max_concurrent: 10      # 并发探测上限
+  dns_max_qps: 10         # 上游 DNS 解析限速（防 ban）
+  dns_backoff_min: 5      # 失败退避下限（秒）
+  dns_backoff_max: 120    # 失败退避上限（秒）
+  upstream_resolvers: ["119.29.29.29:53", "223.5.5.5:53"]  # 可配多个上游，轮询+故障转移
+
+records:
+  # A 记录：加权负载均衡 + TCP 健康检查 + 兜底
+  api.example.com:
+    type: A
+    lb: weighted-round-robin
+    fallback: "192.0.2.1"         # 全部后端 down 时的兜底 IP（可选）
+    targets:
+      - { value: "192.0.2.1", weight: 3, health: { kind: tcp, port: 80 } }
+      - { value: "192.0.2.2", weight: 1, health: { kind: tcp, port: 80 } }
+
+  # AAAA 记录：加权随机
+  api6.example.com:
+    type: AAAA
+    lb: weighted-random
+    targets:
+      - { value: "2001:db8::1", weight: 1 }
+      - { value: "2001:db8::2", weight: 2 }
+
+  # CNAME 记录：权重负载均衡 + DNS 解析健康检查（对目标域名做 A 解析）
+  www.example.com:
+    type: CNAME
+    lb: weighted-round-robin
+    targets:
+      - { value: "cdn-a.example.net", weight: 5 }
+      - { value: "cdn-b.example.net", weight: 5 }
+
+  # A 记录 + HTTP 健康检查
+  web.example.com:
+    type: A
+    lb: weighted-round-robin
+    targets:
+      - value: "192.0.2.10"
+        weight: 1
+        health: { kind: http, url: "http://192.0.2.10/healthz" }
+      - value: "192.0.2.11"
+        weight: 1
+        health: { kind: http, url: "http://192.0.2.11/healthz" }

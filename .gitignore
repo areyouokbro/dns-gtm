@@ -1,0 +1,16 @@
+# 编译产物
+/dns-gtm
+/dns-gtm.exe
+*.exe
+
+# 日志
+*.log
+
+# 测试 / 临时文件
+/test-config.yaml
+/query.go
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store

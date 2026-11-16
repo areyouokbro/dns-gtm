@@ -1,0 +1,5 @@
+# 统一 LF 换行：本项目面向 Linux 部署，避免 Windows 提交 CRLF 导致 shell 脚本/源码异常
+* text=auto eol=lf
+
+# shell 脚本必须 LF，否则 Linux bash 报错
+*.sh text eol=lf
