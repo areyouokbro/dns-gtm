@@ -2,6 +2,7 @@
 /dns-gtm
 /dns-gtm.exe
 *.exe
+/release/
 
 # 日志
 *.log

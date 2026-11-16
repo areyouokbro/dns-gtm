@@ -13,14 +13,36 @@
 - 全后端 down 时可配兜底值（fallback），否则返回 `SERVFAIL`
 - **配置热加载**：改动配置文件自动生效（mtime 检测），支持 SIGHUP 手动重载
 
-## 构建
+## 一键安装（推荐）
+
+从 GitHub Releases 下载预编译二进制，自动检测 amd64/arm64 架构，安装并配置 systemd 开机自启，**无需 Go 环境**：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/areyouokbro/dns-gtm/main/install.sh | sudo bash
+```
+
+完成后用管理脚本进行日常管理：
+
+```bash
+sudo dns-gtm.sh          # 交互式菜单（安装/卸载/启停/重启/重载/编辑配置）
+sudo dns-gtm.sh edit     # 编辑配置（改完自动热加载）
+```
+
+- 配置在 `/etc/dns-gtm/config.yaml`，改完自动生效。
+- 目录受限的容器环境可指定安装目录：`BIN_DIR=/opt/gtm CONF_DIR=/opt/gtm/etc bash install.sh`
+
+## 手动构建（源码编译）
 
 ```bash
 go mod tidy
 CGO_ENABLED=0 go build -ldflags="-s -w" -o dns-gtm .
 ```
 
-产物是单个静态二进制 `dns-gtm`。
+产物是单个静态二进制 `dns-gtm`。交叉编译其它架构：
+
+```bash
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dns-gtm-arm64 .
+```
 
 ## 运行
 
